@@ -1,4 +1,4 @@
-import { Category } from '../types/type';
+import { CategoryOptions, FilterOptions } from '../types/type';
 import { IRestaurant, Restaurant } from './Restaurant';
 
 export default class RestaurantService {
@@ -12,7 +12,7 @@ export default class RestaurantService {
     return [...this.#restaurants];
   }
 
-  filterByCategory(restaurants: Restaurant[], category: Category | '전체') {
+  filterByCategory(restaurants: Restaurant[], category: CategoryOptions) {
     if (category === '전체') {
       return this.getRestaurantsInfo();
     }
@@ -49,5 +49,46 @@ export default class RestaurantService {
       ...this.#restaurants,
       new Restaurant({ ...restaurant }),
     ];
+  }
+
+  getSortedList(filter: FilterOptions, filteredList: Restaurant[]) {
+    const { sortByName, sortByDistance } = this;
+
+    switch (filter) {
+      case '이름순':
+        return sortByName(filteredList);
+      case '거리순':
+        return sortByDistance(filteredList);
+      default:
+        return [];
+    }
+  }
+
+  getFilteredAndSortedList(category: CategoryOptions, filter: FilterOptions) {
+    const wholeList = this.getRestaurantsInfo();
+
+    const filteredList = this.filterByCategory(wholeList, category);
+
+    const filteredAndSortedList = this.getSortedList(filter, filteredList);
+
+    return filteredAndSortedList;
+  }
+
+  deleteRerstaurant(id: number) {
+    this.#restaurants = [...this.#restaurants].filter(
+      (restaurant) => restaurant.getRestaurantInfo()['id'] !== id
+    );
+  }
+
+  getFilterdFavoriteList() {
+    return [...this.#restaurants].filter((restaurant) =>
+      restaurant.getFavoriteState()
+    );
+  }
+
+  getWholeRestaurantList() {
+    return [...this.getRestaurantsInfo()].map((restaurant) =>
+      restaurant.getRestaurantInfo()
+    );
   }
 }
